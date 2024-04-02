@@ -80,56 +80,64 @@ void menu()
             ;
     }
 }
-
-void createAccount()
-{
-    printf("Create Account Function: \n\n");
+void createAccount(){
     Account *newAccount = (Account *)malloc(sizeof(Account));
-    if (newAccount == NULL)
-    {
-        printf("Error: Unable to allocate memmory.\n");
+
+    if (newAccount == NULL){
+        printf("Error: Unable to allocate memory for new account! \n");
         return;
     }
-    printf("Enter account number: \n");
-    scanf("%d", &newAccount->accountNumber);
-    while (getchar() != '\n')
-        ;
+    char confirm[12];
 
-    printf("Enter name: \n");
-    fgets(newAccount->name, sizeof(newAccount->name), stdin);
-    newAccount->name[strcspn(newAccount->name, "\n")] = '\0';
+    do {
+        printf("Enter account number: \n");
+        scanf("%d", &newAccount -> accountNumber);
+        while (getchar() != '\n');
 
-    printf("Enter initial balance: \n");
-    scanf("%f", &newAccount->balance);
-    while (getchar() != '\n')
-        ;
+        printf("Enter Prefered Name: \n");
+        fgets(newAccount -> name, sizeof(newAccount -> name), stdin);
+        newAccount->name[strcspn(newAccount->name, "\n")] = '\0'; // Remove new line
+
+        printf("Enter Initial Balance: \n");
+        scanf("%f", &newAccount -> balance);
+        while(getchar() != '\n'); // clear input buffer
+
+        printf("\nAccount Number: %d\nName: %s\nInitial Balance: %.2f\n", newAccount -> accountNumber, newAccount -> name, newAccount -> balance);
+
+        printf("Is this information correct? (yes/no): ");
+        fgets(confirm, sizeof(confirm), stdin);
+        confirm[strcspn(confirm, "\n")] = '\0';
+        
+    } while (strcmp(confirm, "yes") != 0);
 
     FILE *file = fopen("account.dat", "a");
-    if (file == NULL)
-    {
+    if (file == NULL){
         printf("Error: Unable to open file. \n");
         free(newAccount);
         return;
     }
-    fprintf(file, "%d %s %.2f\n", newAccount->accountNumber, newAccount->name, newAccount->balance);
-
+    fprintf(file, "%d %s %.2f\n", newAccount -> accountNumber, newAccount -> name, newAccount -> balance);
     fclose(file);
-
     printf("Account created successfully!\n");
     free(newAccount);
 }
+
+
 void viewAccount()
 {
     printf("View Account Function");
 }
+
 void updateAccount()
 {
     printf("Update Account Function");
 }
+
 void searchAccount()
 {
     printf("Search Account Function");
 }
+
 void deleteAccount()
 {
     printf("Delete Account Function");
