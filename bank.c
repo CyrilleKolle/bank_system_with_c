@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 typedef struct
 {
@@ -80,52 +81,98 @@ void menu()
             ;
     }
 }
-void createAccount(){
+void createAccount()
+{
     Account *newAccount = (Account *)malloc(sizeof(Account));
 
-    if (newAccount == NULL){
+    if (newAccount == NULL)
+    {
         printf("Error: Unable to allocate memory for new account! \n");
         return;
     }
     char confirm[12];
 
-    do {
+    do
+    {
         printf("Enter account number: \n");
-        scanf("%d", &newAccount -> accountNumber);
-        while (getchar() != '\n');
+        scanf("%d", &newAccount->accountNumber);
+        while (getchar() != '\n')
+            ;
 
         printf("Enter Prefered Name: \n");
-        fgets(newAccount -> name, sizeof(newAccount -> name), stdin);
+        fgets(newAccount->name, sizeof(newAccount->name), stdin);
         newAccount->name[strcspn(newAccount->name, "\n")] = '\0'; // Remove new line
 
         printf("Enter Initial Balance: \n");
-        scanf("%f", &newAccount -> balance);
-        while(getchar() != '\n'); // clear input buffer
+        scanf("%f", &newAccount->balance);
+        while (getchar() != '\n')
+            ; // clear input buffer
 
-        printf("\nAccount Number: %d\nName: %s\nInitial Balance: %.2f\n", newAccount -> accountNumber, newAccount -> name, newAccount -> balance);
+        printf("\nAccount Number: %d\nName: %s\nInitial Balance: %.2f\n", newAccount->accountNumber, newAccount->name, newAccount->balance);
 
         printf("Is this information correct? (yes/no): ");
         fgets(confirm, sizeof(confirm), stdin);
         confirm[strcspn(confirm, "\n")] = '\0';
-        
+
     } while (strcmp(confirm, "yes") != 0);
 
     FILE *file = fopen("account.dat", "a");
-    if (file == NULL){
+    if (file == NULL)
+    {
         printf("Error: Unable to open file. \n");
         free(newAccount);
         return;
     }
-    fprintf(file, "%d %s %.2f\n", newAccount -> accountNumber, newAccount -> name, newAccount -> balance);
+    fprintf(file, "%d %s %.2f\n", newAccount->accountNumber, newAccount->name, newAccount->balance);
     fclose(file);
     printf("Account created successfully!\n");
     free(newAccount);
 }
 
-
 void viewAccount()
 {
-    printf("View Account Function");
+    int searchAccountNumber;
+    printf("Enter the account number to view details: ");
+    scanf("%d", &searchAccountNumber);
+    while (getchar() != '\n') // To clear the input line
+        ;
+
+    FILE *file = fopen("account.dat", "r");
+    if (file == NULL)
+    {
+        printf("Error: Unable to open the file!\n");
+        return;
+    }
+
+    char line[200];
+    int found = 0;
+    while (fgets(line, sizeof(line), file))
+    {
+        int accountNumber;
+        char name[100];
+        float balance;
+
+        char *token = strtok(line, " ");
+        if (token != NULL && sscanf(token, "%d", &accountNumber) == 1)
+        {
+            if (accountNumber == searchAccountNumber)
+            {
+                token = strtok(NULL, "\n");
+                if (token != NULL && sscanf(token, "%99[^0-9] %f", name, &balance) == 2)
+                {
+                    printf("%-15s %-30s %-15s\n", "Account Number", "Name", "Balance");
+                    printf("%-15d %-30s %-15.2f\n", accountNumber, name, balance);
+                    found = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if (!found)
+    {
+        printf("Account number %d not found!\n", searchAccountNumber);
+    }
+    fclose(file);
 }
 
 void updateAccount()
